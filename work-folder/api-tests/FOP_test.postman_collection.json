@@ -1,0 +1,877 @@
+{
+	"info": {
+		"_postman_id": "6c8dfbf7-dcff-409e-a730-777e364eb216",
+		"name": "FOP_test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7623526"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"\r",
+							"const token = responseJson.token;\r",
+							"\r",
+							"pm.collectionVariables.set(\"token\", token);\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"sanya.maximyuk@gmail.com\",\r\n    \"password\": \"testTest5!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/react/Authenticate/login",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"react",
+						"Authenticate",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add_income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"});\r",
+							"\r",
+							"try {\r",
+							"    const responseBodyText = pm.response.text();\r",
+							"\r",
+							"    const regex = /Successfully created income ID: ([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;\r",
+							"\r",
+							"    const match = responseBodyText.match(regex);\r",
+							"\r",
+							"    if (match && match[1]) {\r",
+							"\r",
+							"        const extractedId = match[1];\r",
+							"\r",
+							"        pm.collectionVariables.set(\"incomeId\", extractedId);\r",
+							"\r",
+							"        console.log(\"Collection variable 'incomeId' set successfully.\");\r",
+							"        console.log(\"Extracted ID: \" + extractedId);\r",
+							"\r",
+							"        pm.test(\"Income ID was extracted and set\", function () {\r",
+							"            pm.expect(extractedId).to.be.a('string').and.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i);\r",
+							"            pm.expect(pm.collectionVariables.get(\"incomeId\")).to.eql(extractedId);\r",
+							"        });\r",
+							"\r",
+							"    } else {\r",
+							"        console.error(\"Error: Could not find or extract income ID from the response body.\");\r",
+							"        console.error(\"Response Body Received:\", responseBodyText);\r",
+							"        pm.test(\"Income ID extraction failed\", function () {\r",
+							"           pm.expect.fail(\"Expected pattern 'Successfully created income ID: <UUID>' not found in response body\");\r",
+							"        });\r",
+							"    }\r",
+							"} catch (e) {\r",
+							"     console.error(\"Error processing response text:\", e);\r",
+							"     pm.test(\"Response text processing failed\", function () {\r",
+							"        pm.expect.fail(\"Could not process response body text\");\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"ID-777\",\r\n    \"Date\": \"2025-04-23\",\r\n    \"Income\": \"777\",\r\n    \"Currency\": \"UAH\",\r\n    \"Comment\": \"test\",\r\n    \"Cash\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/incomes/add",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"incomes",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View_incomes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const expectedIncomeId = pm.collectionVariables.get(\"incomeId\");\r",
+							"\r",
+							"if (!expectedIncomeId) {\r",
+							"    console.error(\"Error: Collection variable 'incomeId' not found. Make sure the previous request ran successfully and set the variable.\");\r",
+							"    pm.test(\"Prerequisite Failed: incomeId variable is missing\", function () {\r",
+							"        pm.expect.fail(\"Collection variable 'incomeId' was not found.\");\r",
+							"    });\r",
+							"} else {\r",
+							"    console.log(\"Checking for incomeId:\", expectedIncomeId);\r",
+							"\r",
+							"    try {\r",
+							"        const responseData = pm.response.json();\r",
+							"\r",
+							"        pm.test(\"Response body is an object\", function () {\r",
+							"            pm.expect(responseData).to.be.an('object');\r",
+							"        });\r",
+							"\r",
+							"        let foundItem = null; \r",
+							"        for (const incomeArray of Object.values(responseData)) {\r",
+							"            if (Array.isArray(incomeArray)) {\r",
+							"                foundItem = incomeArray.find(item => item && item.ID === expectedIncomeId);\r",
+							"\r",
+							"                 if (foundItem) {\r",
+							"                     break;\r",
+							"                 }\r",
+							"            } else {\r",
+							"                console.warn(\"Found a non-array value in the response object:\", incomeArray);\r",
+							"            }\r",
+							"        }\r",
+							"\r",
+							"            pm.test(`Income ID '${expectedIncomeId}' exists in the list`, function () {\r",
+							"            if (foundItem) {\r",
+							"                console.log(\"Found matching income item:\", foundItem);\r",
+							"                pm.expect(foundItem).to.exist;\r",
+							"            } else {\r",
+							"                console.error(`Error: Income ID '${expectedIncomeId}' was NOT found in any list within the response.`);\r",
+							"                try {\r",
+							"                    const keys = Object.keys(responseData);\r",
+							"                    console.log(\"Keys in response:\", keys);\r",
+							"                    if (keys.length > 0 && Array.isArray(responseData[keys[0]])) {\r",
+							"                         const firstFewIds = responseData[keys[0]].slice(0, 5).map(item => item ? item.ID : 'undefined_item');\r",
+							"                         console.log(`First few IDs in list '${keys[0]}':`, firstFewIds);\r",
+							"                    }\r",
+							"                } catch (logError) {\r",
+							"                    console.error(\"Error logging debug info:\", logError);\r",
+							"                }\r",
+							"                pm.expect.fail(`Expected income ID '${expectedIncomeId}' not found in the list.`);\r",
+							"            }\r",
+							"        });\r",
+							"\r",
+							"    } catch (e) {\r",
+							"        console.error(\"Error parsing JSON response:\", e);\r",
+							"        pm.test(\"Response body JSON parsing failed\", function () {\r",
+							"            pm.expect.fail(\"Could not parse response body as JSON object\");\r",
+							"        });\r",
+							"    }\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://new.fophelp.pro/api/incomes?",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"incomes"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update_income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains a correctly formatted UUID\", function () {\r",
+							"    const regex = /Successfully modified income ID: ([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;\r",
+							"    const match = pm.response.text().match(regex);\r",
+							"\r",
+							"    if (match && match[1]) {\r",
+							"        const extractedId = match[1];\r",
+							"        pm.expect(extractedId).to.be.a('string').and.not.empty;\r",
+							"        console.log(\"Verified UUID format:\", extractedId);\r",
+							"    } else {\r",
+							"        pm.expect.fail(\"Could not find a correctly formatted UUID in the response string.\");\r",
+							"    }\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"{{incomeId}}\",\r\n    \"Date\": \"2025-04-24T00:00:00\",\r\n    \"Income\": \"777\",\r\n    \"Currency\": \"UAH\",\r\n    \"Comment\": \"test3333\",\r\n    \"Cash\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/incomes/update",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"incomes",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_income",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Body contains success message\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"Successfully deleted income ID:\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"{{incomeId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/incomes/delete",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"incomes",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View_incomes_after_removing",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const expectedIncomeId = pm.collectionVariables.get(\"incomeId\");\r",
+							"\r",
+							"if (!expectedIncomeId) {\r",
+							"    console.error(\"Error: Collection variable 'incomeId' not found. Make sure the previous request ran successfully and set the variable.\");\r",
+							"    pm.test(\"Prerequisite Failed: incomeId variable is missing\", function () {\r",
+							"        pm.expect.fail(\"Collection variable 'incomeId' was not found.\");\r",
+							"    });\r",
+							"} else {\r",
+							"    console.log(\"Checking for incomeId:\", expectedIncomeId);\r",
+							"\r",
+							"    try {\r",
+							"        const responseData = pm.response.json();\r",
+							"\r",
+							"        pm.test(\"Response body is an object\", function () {\r",
+							"            pm.expect(responseData).to.be.an('object');\r",
+							"        });\r",
+							"\r",
+							"        let foundItem = null; \r",
+							"        for (const incomeArray of Object.values(responseData)) {\r",
+							"            if (Array.isArray(incomeArray)) {\r",
+							"                foundItem = incomeArray.find(item => item && item.ID === expectedIncomeId);\r",
+							"\r",
+							"                 if (foundItem) {\r",
+							"                     break;\r",
+							"                 }\r",
+							"            } else {\r",
+							"                console.warn(\"Found a non-array value in the response object:\", incomeArray);\r",
+							"            }\r",
+							"        }\r",
+							"\r",
+							"            pm.test(`Income ID '${expectedIncomeId}' exists in the list`, function () {\r",
+							"            if (foundItem) {\r",
+							"                console.log(\"Found matching income item:\", foundItem);\r",
+							"                pm.expect(foundItem).to.exist;\r",
+							"            } else {\r",
+							"                console.error(`Error: Income ID '${expectedIncomeId}' was NOT found in any list within the response.`);\r",
+							"                try {\r",
+							"                    const keys = Object.keys(responseData);\r",
+							"                    console.log(\"Keys in response:\", keys);\r",
+							"                    if (keys.length > 0 && Array.isArray(responseData[keys[0]])) {\r",
+							"                         const firstFewIds = responseData[keys[0]].slice(0, 5).map(item => item ? item.ID : 'undefined_item');\r",
+							"                         console.log(`First few IDs in list '${keys[0]}':`, firstFewIds);\r",
+							"                    }\r",
+							"                } catch (logError) {\r",
+							"                    console.error(\"Error logging debug info:\", logError);\r",
+							"                }\r",
+							"                pm.expect.fail(`Expected income ID '${expectedIncomeId}' not found in the list.`);\r",
+							"            }\r",
+							"        });\r",
+							"\r",
+							"    } catch (e) {\r",
+							"        console.error(\"Error parsing JSON response:\", e);\r",
+							"        pm.test(\"Response body JSON parsing failed\", function () {\r",
+							"            pm.expect.fail(\"Could not parse response body as JSON object\");\r",
+							"        });\r",
+							"    }\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://new.fophelp.pro/api/incomes?",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"incomes"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add_expenses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 201\", function () {\r",
+							"        pm.expect(pm.response.code).to.be.oneOf([200, 201]);\r",
+							"});\r",
+							"\r",
+							"try {\r",
+							"    const responseBodyText = pm.response.text();\r",
+							"\r",
+							"    const regex = /Successfully created expense ID: ([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i;\r",
+							"\r",
+							"    const match = responseBodyText.match(regex);\r",
+							"\r",
+							"    if (match && match[1]) {\r",
+							"        const extractedId = match[1];\r",
+							"\r",
+							"        pm.collectionVariables.set(\"expenseId\", extractedId);\r",
+							"\r",
+							"        console.log(\"Collection variable 'expenseId' set successfully.\");\r",
+							"        console.log(\"Extracted ID: \" + extractedId);\r",
+							"\r",
+							"        pm.test(\"Expense ID was extracted and set\", function () {\r",
+							"            pm.expect(extractedId).to.be.a('string').and.match(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i);\r",
+							"            pm.expect(pm.collectionVariables.get(\"expenseId\")).to.eql(extractedId);\r",
+							"        });\r",
+							"\r",
+							"    } else {\r",
+							"        console.error(\"Error: Could not find or extract expense ID from the response body.\");\r",
+							"        console.error(\"Response Body Received:\", responseBodyText); // Log the actual response for debugging\r",
+							"        pm.test(\"Expense ID extraction failed\", function () {\r",
+							"            pm.expect.fail(\"Expected pattern 'Successfully created expense ID: <UUID>' not found in response body\");\r",
+							"        });\r",
+							"    }\r",
+							"} catch (e) {\r",
+							"     console.error(\"Error processing response text:\", e);\r",
+							"     pm.test(\"Response text processing failed\", function () {\r",
+							"        pm.expect.fail(\"Could not process response body text\");\r",
+							"    });\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"ID-444\",\r\n    \"Date\": \"2025-04-23\",\r\n    \"Expense\": \"444\",\r\n    \"Currency\": \"UAH\",\r\n    \"Comment\": \"payed\",\r\n    \"Cash\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/expenses/add",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"expenses",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View_expenses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const expectedexpenseId = pm.collectionVariables.get(\"expenseId\");\r",
+							"\r",
+							"if (!expectedexpenseId) {\r",
+							"    console.error(\"Error: Collection variable 'expenseId' not found. Make sure the previous request ran successfully and set the variable.\");\r",
+							"    pm.test(\"Prerequisite Failed: expenseId variable is missing\", function () {\r",
+							"        pm.expect.fail(\"Collection variable 'expenseId' was not found.\");\r",
+							"    });\r",
+							"} else {\r",
+							"    console.log(\"Checking for expenseId:\", expectedexpenseId);\r",
+							"\r",
+							"    try {\r",
+							"        const responseData = pm.response.json();\r",
+							"\r",
+							"        pm.test(\"Response body is an object\", function () {\r",
+							"            pm.expect(responseData).to.be.an('object');\r",
+							"        });\r",
+							"\r",
+							"        let foundItem = null; \r",
+							"        for (const expenseArray of Object.values(responseData)) {\r",
+							"            if (Array.isArray(expenseArray)) {\r",
+							"                foundItem = expenseArray.find(item => item && item.ID === expectedexpenseId);\r",
+							"\r",
+							"                 if (foundItem) {\r",
+							"                     break;\r",
+							"                 }\r",
+							"            } else {\r",
+							"                console.warn(\"Found a non-array value in the response object:\", expenseArray);\r",
+							"            }\r",
+							"        }\r",
+							"\r",
+							"            pm.test(`expense ID '${expectedexpenseId}' exists in the list`, function () {\r",
+							"            if (foundItem) {\r",
+							"                console.log(\"Found matching expense item:\", foundItem);\r",
+							"                pm.expect(foundItem).to.exist;\r",
+							"            } else {\r",
+							"                console.error(`Error: expense ID '${expectedexpenseId}' was NOT found in any list within the response.`);\r",
+							"                try {\r",
+							"                    const keys = Object.keys(responseData);\r",
+							"                    console.log(\"Keys in response:\", keys);\r",
+							"                    if (keys.length > 0 && Array.isArray(responseData[keys[0]])) {\r",
+							"                         const firstFewIds = responseData[keys[0]].slice(0, 5).map(item => item ? item.ID : 'undefined_item');\r",
+							"                         console.log(`First few IDs in list '${keys[0]}':`, firstFewIds);\r",
+							"                    }\r",
+							"                } catch (logError) {\r",
+							"                    console.error(\"Error logging debug info:\", logError);\r",
+							"                }\r",
+							"                pm.expect.fail(`Expected expense ID '${expectedexpenseId}' not found in the list.`);\r",
+							"            }\r",
+							"        });\r",
+							"\r",
+							"    } catch (e) {\r",
+							"        console.error(\"Error parsing JSON response:\", e);\r",
+							"        pm.test(\"Response body JSON parsing failed\", function () {\r",
+							"            pm.expect.fail(\"Could not parse response body as JSON object\");\r",
+							"        });\r",
+							"    }\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://new.fophelp.pro/api/expenses?",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"expenses"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update_expenses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"Successfully modified expense ID\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"{{expenseId}}\",\r\n    \"Date\": \"2025-04-23T00:00:00\",\r\n    \"Expense\": \"444\",\r\n    \"Currency\": \"UAH\",\r\n    \"Comment\": \"payed4444\",\r\n    \"Cash\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/expenses/update",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"expenses",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete_expenses",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches string\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"Successfully deleted expense ID\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"ID\": \"{{expenseId}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://new.fophelp.pro/api/expenses/delete",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"expenses",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View_expenses_after_removing",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const expectedexpenseId = pm.collectionVariables.get(\"expenseId\");\r",
+							"\r",
+							"if (!expectedexpenseId) {\r",
+							"    console.error(\"Error: Collection variable 'expenseId' not found. Make sure the previous request ran successfully and set the variable.\");\r",
+							"    pm.test(\"Prerequisite Failed: expenseId variable is missing\", function () {\r",
+							"        pm.expect.fail(\"Collection variable 'expenseId' was not found.\");\r",
+							"    });\r",
+							"} else {\r",
+							"    console.log(\"Checking for expenseId:\", expectedexpenseId);\r",
+							"\r",
+							"    try {\r",
+							"        const responseData = pm.response.json();\r",
+							"\r",
+							"        pm.test(\"Response body is an object\", function () {\r",
+							"            pm.expect(responseData).to.be.an('object');\r",
+							"        });\r",
+							"\r",
+							"        let foundItem = null; \r",
+							"        for (const expenseArray of Object.values(responseData)) {\r",
+							"            if (Array.isArray(expenseArray)) {\r",
+							"                foundItem = expenseArray.find(item => item && item.ID === expectedexpenseId);\r",
+							"\r",
+							"                 if (foundItem) {\r",
+							"                     break;\r",
+							"                 }\r",
+							"            } else {\r",
+							"                console.warn(\"Found a non-array value in the response object:\", expenseArray);\r",
+							"            }\r",
+							"        }\r",
+							"\r",
+							"            pm.test(`expense ID '${expectedexpenseId}' exists in the list`, function () {\r",
+							"            if (foundItem) {\r",
+							"                console.log(\"Found matching expense item:\", foundItem);\r",
+							"                pm.expect(foundItem).to.exist;\r",
+							"            } else {\r",
+							"                console.error(`Error: expense ID '${expectedexpenseId}' was NOT found in any list within the response.`);\r",
+							"                try {\r",
+							"                    const keys = Object.keys(responseData);\r",
+							"                    console.log(\"Keys in response:\", keys);\r",
+							"                    if (keys.length > 0 && Array.isArray(responseData[keys[0]])) {\r",
+							"                         const firstFewIds = responseData[keys[0]].slice(0, 5).map(item => item ? item.ID : 'undefined_item');\r",
+							"                         console.log(`First few IDs in list '${keys[0]}':`, firstFewIds);\r",
+							"                    }\r",
+							"                } catch (logError) {\r",
+							"                    console.error(\"Error logging debug info:\", logError);\r",
+							"                }\r",
+							"                pm.expect.fail(`Expected expense ID '${expectedexpenseId}' not found in the list.`);\r",
+							"            }\r",
+							"        });\r",
+							"\r",
+							"    } catch (e) {\r",
+							"        console.error(\"Error parsing JSON response:\", e);\r",
+							"        pm.test(\"Response body JSON parsing failed\", function () {\r",
+							"            pm.expect.fail(\"Could not parse response body as JSON object\");\r",
+							"        });\r",
+							"    }\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://new.fophelp.pro/api/expenses?",
+					"protocol": "https",
+					"host": [
+						"new",
+						"fophelp",
+						"pro"
+					],
+					"path": [
+						"api",
+						"expenses"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "incomeId",
+			"value": ""
+		},
+		{
+			"key": "expenseId",
+			"value": ""
+		}
+	]
+}
