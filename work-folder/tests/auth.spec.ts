@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-
 import { LoginPage } from '../src/pages/login.page';
 
 test.describe('Authentication Tests', () => {
